@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古文句子翻译</title>
+    <style>
+        .maker-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #34495e;
+            font-size: 1rem;
+            font-weight: 500;
+            z-index: 10;
+        }
+
+        .maker-info a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .maker-info a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "宋体", "Microsoft YaHei", sans-serif;
+            /* 替换为指定背景图片并设置相关属性 */
+            background-image: url("https://cdn.pixabay.com/photo/2020/12/03/12/35/sunset-5800386_1280.jpg");
+            background-size: cover; /* 图片覆盖整个背景 */
+            background-repeat: no-repeat; /* 不重复显示 */
+            background-attachment: fixed; /* 背景固定，不随滚动变化 */
+            background-position: center; /* 图片居中显示 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 标题样式 */
+        .main-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            letter-spacing: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 存档管理按钮 */
+        .archive-controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #archive-manager-btn {
+            background-color: #34495e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #archive-manager-btn:hover {
+            background-color: #2c3e50;
+            transform: translateY(-2px);
+        }
+
+        #current-archive {
+            color: #34495e;
+            font-style: italic;
+        }
+
+        /* 题目容器（中间圆角矩形） */
+        .question-container {
+            width: 90%;
+            max-width: 900px;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            padding: 40px 30px;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        /* 总题数显示 */
+        .question-total {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        /* 题目编号 */
+        .question-number {
+            font-size: 1.3rem;
+            color: #34495e;
+            margin-bottom: 25px;
+            padding-left: 15px;
+            border-left: 4px solid #3498db;
+        }
+
+        /* 题目内容 */
+        .question-content {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            line-height: 2.2;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        /* 答案内容（红色，初始隐藏） */
+        .answer-content {
+            font-size: 1.6rem;
+            color: #e74c3c;
+            line-height: 2.2;
+            margin-bottom: 30px;
+            text-align: left;
+            display: none;
+            padding-left: 20px;
+            border-left: 2px solid #e74c3c;
+        }
+
+        /* 按钮组 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        /* 通用按钮样式 */
+        .btn {
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        #prev-btn {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        #prev-btn:hover:enabled {
+            background-color: #7f8c8d;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        #show-answer-btn {
+            background-color: #3498db;
+            color: white;
+        }
+
+        #show-answer-btn:hover:enabled {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        #next-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        #next-btn:hover:enabled {
+            background-color: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        /* 答题存档容器 */
+        .archive-container {
+            width: 90%;
+            max-width: 900px;
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            padding: 30px 30px;
+        }
+
+        /* 存档标题 */
+        .archive-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        /* 存档内容 */
+        #archive-content {
+            font-size: 1rem;
+            color: #34495e;
+            line-height: 1.8;
+        }
+
+        /* 存档项样式 */
+        .archive-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #bdc3c7;
+        }
+
+        /* 存档管理模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #e74c3c;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .archive-list {
+            margin-bottom: 30px;
+        }
+
+        .saved-archive-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .saved-archive-item:hover {
+            transform: translateX(5px);
+        }
+
+        .saved-archive-item.current {
+            border-left: 4px solid #3498db;
+        }
+
+        .archive-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .archive-name {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .archive-meta {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            line-height: 1.4; /* 增加行高，让两行文字更清晰 */
+        }
+
+        /* 存档操作按钮样式 - 确保文字横向显示 */
+        .archive-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            align-items: center;
+            white-space: nowrap; /* 防止按钮组换行 */
+        }
+
+        .archive-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            min-width: 60px; /* 确保有足够宽度显示文字 */
+            white-space: nowrap; /* 防止文字换行 */
+            text-align: center; /* 文字居中 */
+        }
+
+        .load-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .load-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .new-archive-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .new-archive-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .new-archive-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        #new-archive-name {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        #create-archive-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #create-archive-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+
+            .question-container, .archive-container {
+                width: 95%;
+                padding: 30px 20px;
+            }
+
+            .question-content, .answer-content {
+                font-size: 1.4rem;
+                line-height: 2;
+            }
+
+            .button-group {
+                gap: 15px;
+            }
+
+            .btn {
+                padding: 12px 24px;
+                font-size: 1rem;
+            }
+
+            .archive-actions {
+                gap: 5px;
+            }
+
+            .archive-actions button {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+                min-width: 50px;
+            }
+
+            .new-archive-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 添加制作者信息 -->
+    <div class="maker-info">制作者：<a href="https://poucedu.GitHub.io" target="_blank">HYP</a></div>
+    <!-- 主标题 -->
+    <div class="main-title">《六国论》+《答司马谏议书》+《阿房宫赋》句子翻译答题</div>
+
+    <!-- 存档控制区 -->
+    <div class="archive-controls">
+        <button id="archive-manager-btn">存档管理</button>
+        <div id="current-archive">当前存档: 未选择</div>
+    </div>
+
+    <!-- 题目容器 -->
+    <div class="question-container">
+        <div class="question-total">总题数: 0</div>
+        <div class="question-number">第 1 题</div>
+        <div class="question-content"></div>
+        <div class="answer-content"></div>
+        <div class="button-group">
+            <button class="btn" id="prev-btn" disabled>上一题</button>
+            <button class="btn" id="show-answer-btn">显示答案</button>
+            <button class="btn" id="next-btn">下一题</button>
+        </div>
+    </div>
+
+    <!-- 答题存档容器 -->
+    <div class="archive-container">
+        <div class="archive-title">答题存档</div>
+        <div id="archive-content">暂无答题记录</div>
+    </div>
+
+    <!-- 存档管理模态框 -->
+    <div class="modal" id="archive-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="modal-title">存档管理</h2>
+            
+            <div class="archive-list" id="archive-list">
+                <!-- 存档列表将通过JS动态生成 -->
+            </div>
+            
+            <div class="new-archive-section">
+                <h3 class="new-archive-title">创建新存档</h3>
+                <form class="new-archive-form">
+                    <input type="text" id="new-archive-name" placeholder="输入存档名称">
+                    <button type="button" id="create-archive-btn">创建</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 存档管理类 - 负责所有存档相关操作
+        class ArchiveManager {
+            constructor(storageKey = 'characterQuizArchives') {
+                this.storageKey = storageKey;
+                this.currentArchiveId = null;
+                this.init();
+            }
+
+            // 初始化 - 检查本地存储中是否有存档
+            init() {
+                const archives = this.getAllArchives();
+                if (archives.length > 0 && !this.currentArchiveId) {
+                    // 如果有存档但没有当前选中的存档，默认选中第一个
+                    this.currentArchiveId = archives[0].id;
+                }
+            }
+
+            // 生成唯一ID
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+            }
+
+            // 获取所有存档
+            getAllArchives() {
+                try {
+                    const stored = localStorage.getItem(this.storageKey);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (e) {
+                    console.error('获取存档失败:', e);
+                    return [];
+                }
+            }
+
+            // 保存所有存档到本地存储
+            saveArchives(archives) {
+                try {
+                    localStorage.setItem(this.storageKey, JSON.stringify(archives));
+                    return true;
+                } catch (e) {
+                    console.error('保存存档失败:', e);
+                    return false;
+                }
+            }
+
+            // 创建新存档
+            createArchive(name, questionGroups) {
+                const newArchive = {
+                    id: this.generateId(),
+                    name: name || `存档_${new Date().toLocaleString().slice(0, 10)}`,
+                    createdAt: new Date().toLocaleString(),
+                    updatedAt: new Date().toLocaleString(),
+                    questionGroups: questionGroups,
+                    currentIndex: 0,
+                    answeredArchive: []
+                };
+
+                const archives = this.getAllArchives();
+                archives.push(newArchive);
+                this.saveArchives(archives);
+                
+                // 自动切换到新创建的存档
+                this.currentArchiveId = newArchive.id;
+                return newArchive;
+            }
+
+            // 加载存档
+            loadArchive(archiveId) {
+                const archives = this.getAllArchives();
+                const archive = archives.find(a => a.id === archiveId);
+                
+                if (archive) {
+                    this.currentArchiveId = archiveId;
+                    return {
+                        questionGroups: archive.questionGroups,
+                        currentIndex: archive.currentIndex,
+                        answeredArchive: archive.answeredArchive,
+                        name: archive.name
+                    };
+                }
+                return null;
+            }
+
+            // 更新当前存档
+            updateCurrentArchive(data) {
+                if (!this.currentArchiveId) return false;
+                
+                const archives = this.getAllArchives();
+                const index = archives.findIndex(a => a.id === this.currentArchiveId);
+                
+                if (index !== -1) {
+                    // 更新存档数据并更新时间戳
+                    archives[index] = {
+                        ...archives[index],
+                        ...data,
+                        updatedAt: new Date().toLocaleString()
+                    };
+                    return this.saveArchives(archives);
+                }
+                return false;
+            }
+
+            // 删除存档
+            deleteArchive(archiveId) {
+                const archives = this.getAllArchives();
+                const newArchives = archives.filter(a => a.id !== archiveId);
+                
+                // 如果删除的是当前存档，重置当前存档ID
+                if (archiveId === this.currentArchiveId) {
+                    this.currentArchiveId = newArchives.length > 0 ? newArchives[0].id : null;
+                }
+                
+                return this.saveArchives(newArchives);
+            }
+
+            // 获取当前存档ID
+            getCurrentArchiveId() {
+                return this.currentArchiveId;
+            }
+
+            // 获取当前存档名称
+            getCurrentArchiveName() {
+                const archives = this.getAllArchives();
+                const current = archives.find(a => a.id === this.currentArchiveId);
+                return current ? current.name : '未选择';
+            }
+        }
+
+        // 古文材料
+        const documents = [
+            {
+                name: "《阿房宫赋》",
+                content: [
+                    { original: "六王毕，四海一，蜀山兀，阿房出。", translation: "六国灭亡，天下统一，蜀地的山林被砍光，阿房宫建成了。" },
+                    { original: "覆压三百余里，隔离天日。", translation: "它覆盖了三百多里地面，遮蔽了天空和太阳。" },
+                    { original: "骊山北构而西折，直走咸阳。", translation: "从骊山向北建造，再向西转弯，一直延伸到咸阳。" },
+                    { original: "二川溶溶，流入宫墙。", translation: "渭水和樊川浩浩荡荡，流进了宫墙。" },
+                    { original: "五步一楼，十步一阁；廊腰缦回，檐牙高啄。", translation: "五步一座楼，十步一个阁，走廊像绸带般萦回，飞檐像鸟嘴向上啄着。" },
+                    { original: "各抱地势，钩心斗角。", translation: "楼阁各依地势高低倾斜，屋角相互交错，如同钩连、争斗。" },
+                    { original: "盘盘焉，囷囷焉，蜂房水涡，矗不知其几千万落。", translation: "建筑群盘结交错，像蜂房和水涡，高高耸立，不知有几千万座。" },
+                    { original: "长桥卧波，未云何龙？", translation: "长桥横卧在水波上，没有云怎么会有龙？" },
+                    { original: "复道行空，不霁何虹？", translation: "天桥横跨在空中，不是雨后初晴怎么会有彩虹？" },
+                    { original: "高低冥迷，不知西东。", translation: "房屋高低错落，幽深迷离，让人分不清东西方向。" },
+                    { original: "歌台暖响，春光融融；舞殿冷袖，风雨凄凄。", translation: "歌台上歌声温暖，如春光融和；舞殿里舞袖生寒，如风雨凄凉。" },
+                    { original: "一日之内，一宫之间，而气候不齐。", translation: "同一天之内，同一座宫殿中，气候却截然不同。" },
+                    { original: "妃嫔媵嫱，王子皇孙，辞楼下殿，辇来于秦。", translation: "六国的妃嫔宫女、王子皇孙，辞别故国宫殿，乘车来到秦国。" },
+                    { original: "朝歌夜弦，为秦宫人。", translation: "他们早晚歌唱奏乐，成为秦国的宫人。" },
+                    { original: "明星荧荧，开妆镜也；绿云扰扰，梳晓鬟也。", translation: "明亮的星星闪烁，是宫妃们打开了梳妆镜；乌青的云朵纷扰，是她们在梳理晨妆。" },
+                    { original: "渭流涨腻，弃脂水也；烟斜雾横，焚椒兰也。", translation: "渭水泛起油腻，是她们倾倒的胭脂水；烟雾缭绕，是宫中在焚烧香料。" },
+                    { original: "雷霆乍惊，宫车过也；辘辘远听，杳不知其所之也。", translation: "雷霆突然震响，是宫车驶过；车声渐远，不知去向何方。" },
+                    { original: "一肌一容，尽态极妍，缦立远视，而望幸焉。", translation: "每寸肌肤、每种容颜都美丽至极，她们久久伫立，盼望着皇帝临幸。" },
+                    { original: "有不见者，三十六年。", translation: "有的宫女竟整整三十六年未能见到皇帝。" },
+                    { original: "燕赵之收藏，韩魏之经营，齐楚之精英，几世几年，剽掠其人，倚叠如山。", translation: "燕赵、韩魏、齐楚收藏的金玉珍宝，都是多少代人从百姓那里掠夺来的，堆积如山。" },
+                    { original: "一旦不能有，输来其间。", translation: "一旦国家灭亡，这些珍宝都被运到阿房宫。" },
+                    { original: "鼎铛玉石，金块珠砾，弃掷逦迤，秦人视之，亦不甚惜。", translation: "宝鼎被当作铁锅，美玉被当作石头，黄金被当作土块，珍珠被当作沙砾，随意丢弃，秦人毫不珍惜。" },
+                    { original: "一人之心，千万人之心也。", translation: "一个人的心思，也是千万人的心思。" },
+                    { original: "秦爱纷奢，人亦念其家。", translation: "秦始皇喜欢繁华奢侈，百姓也顾念自己的家。" },
+                    { original: "奈何取之尽锱铢，用之如泥沙！", translation: "为什么搜刮时连一锱一铢都不放过，挥霍时却像泥沙一样浪费！" },
+                    { original: "使负栋之柱，多于南亩之农夫；架梁之椽，多于机上之工女。", translation: "支撑栋梁的柱子，比田里的农夫还多；架在梁上的椽子，比织机上的女工还多。" },
+                    { original: "钉头磷磷，多于在庾之粟粒；瓦缝参差，多于周身之帛缕。", translation: "梁柱上的钉头，比粮仓里的粟粒还多；瓦缝的长度，比全身的丝缕还多。" },
+                    { original: "直栏横槛，多于九土之城郭；管弦呕哑，多于市人之言语。", translation: "栏杆纵横，比天下的城郭还多；乐声嘈杂，比闹市的人声还喧闹。" },
+                    { original: "使天下之人，不敢言而敢怒。", translation: "使天下百姓敢怒而不敢言。" },
+                    { original: "独夫之心，日益骄固。", translation: "秦始皇的心，一天天更加骄横顽固。" },
+                    { original: "戍卒叫，函谷举，楚人一炬，可怜焦土！", translation: "戍边的士卒呐喊起义，函谷关被攻破，项羽放了一把火，阿房宫化为焦土！" },
+                    { original: "灭六国者六国也，非秦也；族秦者秦也，非天下也。", translation: "灭亡六国的是六国自己，不是秦国；灭亡秦朝的是秦朝自己，不是天下人。" },
+                    { original: "使六国各爱其人，则足以拒秦；使秦复爱六国之人，则递三世可至万世而为君，谁得而族灭也？", translation: "如果六国各自爱护百姓，足以抵抗秦国；如果秦朝也爱护六国百姓，就可以传至万世，谁能灭亡它呢？" },
+                    { original: "秦人不暇自哀，而后人哀之；后人哀之而不鉴之，亦使后人而复哀后人也。", translation: "秦人来不及哀悼自己，后人来哀悼他们；后人哀悼却不吸取教训，又会让更后的人哀悼后人。" }
+                ]
+            },
+            {
+                name: "《答司马谏议书》",
+                content: [
+                    { original: "某启：昨日蒙教，窃以为与君实游处相好之日久，而议事每不合，所操之术多异故也。", translation: "安石敬启：昨日承蒙您来信指教，我私下认为与您交往相好已久，但议事常意见不合，是因为所持的政治主张不同。" },
+                    { original: "虽欲强聒，终必不蒙见察，故略上报，不复一一自辨。", translation: "虽然想勉强解释，但必定不被您理解，所以只简单回信，不再逐一辩解。" },
+                    { original: "重念蒙君实视遇厚，于反覆不宜卤莽，故今具道所以，冀君实或见恕也。", translation: "又想到您待我优厚，书信往来不应草率，所以详细说明缘由，希望您能谅解。" },
+                    { original: "盖儒者所争，尤在于名实，名实已明，而天下之理得矣。", translation: "读书人所争辩的，尤其在于名实是否相符。名实辨明，天下的道理就清楚了。" },
+                    { original: "今君实所以见教者，以为侵官、生事、征利、拒谏，以致天下怨谤也。", translation: "您指责我侵犯职权、惹是生非、与民争利、拒绝纳谏，招致天下怨恨。" },
+                    { original: "某则以谓受命于人主，议法度而修之于朝廷，以授之于有司，不为侵官。", translation: "我认为从皇帝那里接受命令，在朝廷讨论修订法令，交给有关部门执行，不算侵权。" },
+                    { original: "举先王之政，以兴利除弊，不为生事。", translation: "推行先王的政策，兴利除弊，不算惹事。" },
+                    { original: "为天下理财，不为征利。", translation: "替国家治理财政，不算与民争利。" },
+                    { original: "辟邪说，难壬人，不为拒谏。", translation: "驳斥错误言论，责难奸佞小人，不算拒谏。" },
+                    { original: "至于怨诽之多，则固前知其如此也。", translation: "至于怨恨诽谤之多，我本来就预料到会这样。" },
+                    { original: "人习于苟且非一日，士大夫多以不恤国事、同俗自媚于众为善。", translation: "人们习惯于得过且过不是一天了，士大夫大多把不关心国事、附和世俗当作美德。" },
+                    { original: "上乃欲变此，而某不量敌之众寡，欲出力助上以抗之，则众何为而不汹汹然？", translation: "皇上想改变这种风气，我不顾反对者多少，想帮助皇上抵制，他们怎能不大吵大闹？" },
+                    { original: "盘庚之迁，胥怨者民也，非特朝廷士大夫而已。", translation: "盘庚迁都时，连百姓都抱怨，不仅是士大夫。" },
+                    { original: "盘庚不为怨者故改其度，度义而后动，是而不见可悔故也。", translation: "盘庚不因为有人抱怨就改变计划，他考虑合理后行动，认为正确就没有后悔。" },
+                    { original: "如君实责我以在位久，未能助上大有为，以膏泽斯民，则某知罪矣。", translation: "如果您责备我在位久却未能助皇上大有作为、造福百姓，我承认有罪。" },
+                    { original: "如曰今日当一切不事事，守前所为而已，则非某之所敢知。", translation: "如果说现在应该无所作为，墨守成规，那就不是我敢认同的了。" },
+                    { original: "无由会晤，不任区区向往之至！", translation: "无缘见面，内心不胜仰慕！" }
+                ]
+            },
+            {
+                name: "《六国论》",
+                content: [
+                    { original: "六国破灭，非兵不利，战不善，弊在赂秦。", translation: "六国灭亡，不是因为武器不锋利、仗打得不好，而是因为用土地贿赂秦国。" },
+                    { original: "赂秦而力亏，破灭之道也。", translation: "贿赂秦国导致国力亏损，这是灭亡的原因。" },
+                    { original: "或曰：六国互丧，率赂秦耶？", translation: "有人问：六国相继灭亡，都是因为贿赂秦国吗？" },
+                    { original: "曰：不赂者以赂者丧，盖失强援，不能独完。故曰：弊在赂秦也。", translation: "回答说：不贿赂的国家因贿赂的国家灭亡而失去强援，无法独自保全。所以说弊病在于贿赂秦国。" },
+                    { original: "秦以攻取之外，小则获邑，大则得城。", translation: "秦国除了用战争夺取土地，小的得到邑镇，大的得到城市。" },
+                    { original: "较秦之所得，与战胜而得者，其实百倍；诸侯之所亡，与战败而亡者，其实亦百倍。", translation: "秦国因贿赂得到的土地，比战胜得到的多百倍；诸侯因贿赂失去的土地，比战败失去的多百倍。" },
+                    { original: "则秦之所大欲，诸侯之所大患，固不在战矣。", translation: "所以秦国最大的欲望、诸侯最大的祸患，根本不在战争。" },
+                    { original: "思厥先祖父，暴霜露，斩荆棘，以有尺寸之地。", translation: "想到他们的祖辈父辈，冒着霜露，披荆斩棘，才得到一点土地。" },
+                    { original: "子孙视之不甚惜，举以予人，如弃草芥。", translation: "子孙却不珍惜，轻易送人，如同丢弃小草。" },
+                    { original: "今日割五城，明日割十城，然后得一夕安寝。", translation: "今天割五座城，明天割十座城，才能睡一夜安稳觉。" },
+                    { original: "起视四境，而秦兵又至矣。", translation: "醒来一看四境，秦国的军队又来了。" },
+                    { original: "然则诸侯之地有限，暴秦之欲无厌，奉之弥繁，侵之愈急。", translation: "诸侯的土地有限，暴秦的贪心无限，送得越多，侵略越急。" },
+                    { original: "故不战而强弱胜负已判矣。", translation: "所以不战而强弱胜负已定。" },
+                    { original: "至于颠覆，理固宜然。", translation: "最终灭亡，理所当然。" },
+                    { original: "古人云：“以地事秦，犹抱薪救火，薪不尽，火不灭。” 此言得之。", translation: "古人说：“用土地侍奉秦国，就像抱柴救火，柴不尽，火不灭。” 这话说得对。" },
+                    { original: "齐人未尝赂秦，终继五国迁灭，何哉？", translation: "齐国未曾贿赂秦国，最终也灭亡了，为什么？" },
+                    { original: "与嬴而不助五国也。", translation: "因为它亲附秦国而不帮助五国。" },
+                    { original: "五国既丧，齐亦不免矣。", translation: "五国灭亡后，齐国也难以幸免。" },
+                    { original: "燕赵之君，始有远略，能守其土，义不赂秦。", translation: "燕国和赵国的君主，起初有长远谋略，能坚守国土，坚持正义不贿赂秦国。" },
+                    { original: "是故燕虽小国而后亡，斯用兵之效也。", translation: "因此燕国虽小却后灭亡，这是用兵抗秦的效果。" },
+                    { original: "至丹以荆卿为计，始速祸焉。", translation: "到燕太子丹用荆轲刺秦之计，才招致灾祸。" },
+                    { original: "赵尝五战于秦，二败而三胜。", translation: "赵国曾与秦国五次交战，二败三胜。" },
+                    { original: "洎牧以谗诛，邯郸为郡，惜其用武而不终也。", translation: "等到李牧因谗言被杀，邯郸沦为秦国的郡县，可惜赵国用武而不能坚持到底。" },
+                    { original: "向使三国各爱其地，齐人勿附于秦，刺客不行，良将犹在，则胜负之数，存亡之理，当与秦相较，或未易量。", translation: "如果韩、魏、楚各自爱惜土地，齐国不亲秦，燕国不派刺客，赵国良将尚存，那么胜负存亡或许难以预料。" },
+                    { original: "以赂秦之地，封天下之谋臣，以事秦之心，礼天下之奇才，并力西向，则吾恐秦人食之不得下咽也。", translation: "用贿赂秦国的土地封赏谋臣，用侍奉秦国的态度礼遇奇才，合力向西抗秦，那么秦人恐怕连饭都咽不下。" },
+                    { original: "为国者无使为积威之所劫哉！", translation: "治理国家的人不要被积久的威势所胁迫！" },
+                    { original: "夫六国与秦皆诸侯，其势弱于秦，而犹有可以不赂而胜之之势。", translation: "六国与秦国都是诸侯，势力比秦弱，却仍有不贿赂而战胜的可能。" },
+                    { original: "苟以天下之大，下而从六国破亡之故事，是又在六国下矣。", translation: "如果凭借偌大的天下，却重蹈六国灭亡的覆辙，那就连六国都不如了。" }
+                ]
+            }
+        ];
+
+        // 全局变量
+        let archiveManager;
+        let currentQuestionGroups = [];
+        let currentIndex = 0;
+        let answeredArchive = [];
+
+        // 生成题目组（确保不重复）
+        function createQuestionGroups() {
+            // 收集所有句子
+            const allSentences = [];
+            documents.forEach(doc => {
+                doc.content.forEach(item => {
+                    allSentences.push({
+                        original: item.original,
+                        translation: item.translation,
+                        source: doc.name
+                    });
+                });
+            });
+
+            // 随机打乱顺序
+            const shuffled = [...allSentences].sort(() => Math.random() - 0.5);
+            
+            // 确保不会出现连续句子重复的情况
+            for (let i = 1; i < shuffled.length; i++) {
+                if (shuffled[i].original === shuffled[i-1].original) {
+                    const swapIndex = i === shuffled.length - 1 ? i - 2 : i + 1;
+                    [shuffled[i], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[i]];
+                }
+            }
+            
+            return shuffled;
+        }
+
+        // 显示当前题目
+        function showCurrentQuestion() {
+            if (currentQuestionGroups.length === 0) return;
+            // 显示总题数
+            document.querySelector('.question-total').textContent = `总题数: ${currentQuestionGroups.length}`;
+            // 显示当前题目编号
+            document.querySelector('.question-number').textContent = `第 ${currentIndex + 1} 题`;
+            // 显示题目内容
+            const current = currentQuestionGroups[currentIndex];
+            document.querySelector('.question-content').textContent = `${current.original} —— ${current.source}`;
+            // 隐藏答案
+            document.querySelector('.answer-content').style.display = 'none';
+            document.getElementById('show-answer-btn').disabled = false;
+        }
+
+        // 更新按钮禁用状态
+        function updateButtonStates() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === currentQuestionGroups.length - 1;
+        }
+
+        // 保存答题记录并更新存档
+        function saveToArchive() {
+            if (currentIndex >= currentQuestionGroups.length) return;
+            const current = currentQuestionGroups[currentIndex];
+            const archiveItem = {
+                number: currentIndex + 1,
+                original: current.original,
+                translation: current.translation,
+                source: current.source,
+                time: new Date().toLocaleString()
+            };
+
+            // 检查是否已存在相同题目记录
+            const isDuplicate = answeredArchive.some(item => item.number === archiveItem.number);
+            if (!isDuplicate) {
+                answeredArchive.push(archiveItem);
+                renderArchive();
+                
+                // 更新当前存档
+                archiveManager.updateCurrentArchive({
+                    currentIndex,
+                    answeredArchive: [...answeredArchive]
+                });
+            }
+        }
+
+        // 渲染答题记录
+        function renderArchive() {
+            const archiveContentEl = document.getElementById('archive-content');
+            if (answeredArchive.length === 0) {
+                archiveContentEl.textContent = '暂无答题记录';
+                return;
+            }
+
+            // 按题目编号排序
+            answeredArchive.sort((a, b) => a.number - b.number);
+            
+            let html = '';
+            answeredArchive.forEach(item => {
+                html += `
+                    <div class="archive-item">
+                        <p><strong>第 ${item.number} 题</strong>（${item.time} · ${item.source}）</p>
+                        <p>${item.original}</p>
+                        <p><em>译文：${item.translation}</em></p>
+                    </div>
+                `;
+            });
+            
+            archiveContentEl.innerHTML = html;
+        }
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 上一题按钮
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    showCurrentQuestion();
+                    updateButtonStates();
+                    // 更新当前存档的位置
+                    archiveManager.updateCurrentArchive({ currentIndex });
+                }
+            });
+
+            // 下一题按钮
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentIndex < currentQuestionGroups.length - 1) {
+                    currentIndex++;
+                    showCurrentQuestion();
+                    updateButtonStates();
+                    // 更新当前存档的位置
+                    archiveManager.updateCurrentArchive({ currentIndex });
+                }
+            });
+
+            // 显示答案按钮
+            document.getElementById('show-answer-btn').addEventListener('click', () => {
+                const answerEl = document.querySelector('.answer-content');
+                answerEl.textContent = currentQuestionGroups[currentIndex].translation;
+                answerEl.style.display = 'block';
+                document.getElementById('show-answer-btn').disabled = true;
+                // 保存到答题记录
+                saveToArchive();
+            });
+
+            // 存档管理按钮
+            document.getElementById('archive-manager-btn').addEventListener('click', () => {
+                document.getElementById('archive-modal').style.display = 'flex';
+                renderArchiveList();
+            });
+
+            // 关闭模态框
+            document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('archive-modal').style.display = 'none';
+            });
+
+            // 创建新存档按钮
+            document.getElementById('create-archive-btn').addEventListener('click', () => {
+                const archiveName = document.getElementById('new-archive-name').value.trim();
+                const questionGroups = createQuestionGroups();
+                archiveManager.createArchive(archiveName, questionGroups);
+                
+                // 加载新创建的存档
+                loadCurrentArchive();
+                
+                // 清空输入框
+                document.getElementById('new-archive-name').value = '';
+                
+                // 更新存档列表并关闭模态框
+                renderArchiveList();
+                document.getElementById('archive-modal').style.display = 'none';
+            });
+        }
+
+        // 渲染存档列表
+        function renderArchiveList() {
+            const archiveListEl = document.getElementById('archive-list');
+            const archives = archiveManager.getAllArchives();
+            
+            if (archives.length === 0) {
+                archiveListEl.innerHTML = '<p style="text-align:center; color:#7f8c8d;">暂无存档</p>';
+                return;
+            }
+            
+            let html = '';
+            archives.forEach(archive => {
+                const isCurrent = archive.id === archiveManager.getCurrentArchiveId();
+                html += `
+                    <div class="saved-archive-item ${isCurrent ? 'current' : ''}">
+                        <div class="archive-info">
+                            <div class="archive-name">${archive.name}</div>
+                            <div class="archive-meta">
+                                创建: ${archive.createdAt}<br>
+                                最近更新: ${archive.updatedAt}
+                            </div>
+                        </div>
+                        <div class="archive-actions">
+                            <button class="load-btn" data-id="${archive.id}">加载</button>
+                            <button class="delete-btn" data-id="${archive.id}">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            archiveListEl.innerHTML = html;
+            
+            // 为加载按钮添加事件
+            document.querySelectorAll('.load-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const archiveId = btn.getAttribute('data-id');
+                    archiveManager.loadArchive(archiveId);
+                    loadCurrentArchive();
+                    document.getElementById('archive-modal').style.display = 'none';
+                });
+            });
+            
+            // 为删除按钮添加事件
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (confirm('确定要删除这个存档吗？')) {
+                        const archiveId = btn.getAttribute('data-id');
+                        archiveManager.deleteArchive(archiveId);
+                        loadCurrentArchive();
+                        renderArchiveList();
+                    }
+                });
+            });
+        }
+
+        // 加载当前存档
+        function loadCurrentArchive() {
+            const currentArchiveId = archiveManager.getCurrentArchiveId();
+            if (!currentArchiveId) {
+                // 如果没有存档，创建一个新的
+                const questionGroups = createQuestionGroups();
+                archiveManager.createArchive(null, questionGroups);
+                loadCurrentArchive();
+                return;
+            }
+            
+            const archiveData = archiveManager.loadArchive(currentArchiveId);
+            if (archiveData) {
+                currentQuestionGroups = archiveData.questionGroups;
+                currentIndex = archiveData.currentIndex;
+                answeredArchive = archiveData.answeredArchive || [];
+                
+                // 更新UI
+                document.getElementById('current-archive').textContent = `当前存档: ${archiveData.name}`;
+                showCurrentQuestion();
+                updateButtonStates();
+                renderArchive();
+            }
+        }
+
+        // 初始化应用
+        function initApp() {
+            archiveManager = new ArchiveManager();
+            initEventListeners();
+            loadCurrentArchive();
+        }
+
+        // 启动应用
+        initApp();
+    </script>
+</body>
+</html>

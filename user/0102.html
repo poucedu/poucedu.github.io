@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#8a7a66" />
+<title>会员中心</title>
+<style>
+  /* ============ 基础变量 ============ */
+  :root{
+    --brand:#8a7a66;
+    --brand-dark:#6b5d4f;
+    --brand-light:#a3927c;
+    --text:#0f172a;
+    --text-2:#475569;
+    --muted:#94a3b8;
+    --line:#e8edf5;
+    --card:#ffffff;
+    --radius:20px;
+    --shadow:0 18px 40px -26px rgba(15,23,42,.35);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  body{
+    min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",
+                "Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:var(--text);
+    background:#f4f6fb;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+
+  /* 背景光晕装饰 */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      radial-gradient(620px 420px at 6% -12%, rgba(138,122,102,.18), transparent 70%),
+      radial-gradient(700px 500px at 108% -6%, rgba(163,146,124,.14), transparent 70%),
+      radial-gradient(640px 420px at 50% 118%, rgba(107,93,79,.10), transparent 70%);
+  }
+
+  .page{
+    max-width:980px;
+    margin:0 auto;
+    padding:28px 20px 72px;
+  }
+
+  /* ============ 顶部栏 ============ */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding-bottom:24px;
+  }
+
+  /* —— 商标 / LOGO 预留位 —— */
+  .logo-slot{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    height:50px;
+    min-width:144px;
+    padding:0 18px;
+    border-radius:14px;
+    border:1.5px dashed #cdbfa9;
+    background:rgba(255,255,255,.72);
+    color:#8a7a66;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-decoration:none;
+    backdrop-filter:blur(6px);
+    transition:.2s ease;
+  }
+  .logo-slot:hover{
+    border-color:#a3927c;
+    background:#fff;
+    box-shadow:0 10px 24px -14px rgba(138,122,102,.5);
+  }
+  /* 替换成真实商标图片时使用这个类 */
+  .logo-img{height:38px;width:auto;display:block;}
+
+  .topbar-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:inherit;
+    font-size:13px;
+    color:var(--text-2);
+    text-decoration:none;
+    padding:9px 16px;
+    border:1px solid transparent;
+    border-radius:999px;
+    background:none;
+    cursor:pointer;
+    transition:.2s ease;
+  }
+  .topbar-link:hover{
+    background:#fff;
+    color:#6b5d4f;
+    border-color:#e6ddcf;
+    box-shadow:var(--shadow);
+  }
+
+  /* ============ 会员卡（朴素哑光青铜） ============ */
+  .member-card{
+    position:relative;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+    padding:28px;
+    margin-bottom:20px;
+    border-radius:24px;
+    overflow:hidden;
+    color:#fff;
+    /* 哑光灰褐 / 土青铜，无奢华高光渐变 */
+    background:linear-gradient(125deg,#6b5d4f 0%,#82705a 55%,#8f7e68 100%);
+    box-shadow:0 20px 40px -28px rgba(80,68,55,.75);
+    border:1px solid rgba(255,255,255,.10);
+  }
+  /* 去掉原来的高光光晕，保留非常淡的一层，避免太抢眼 */
+  .member-card::after{
+    content:"";
+    position:absolute;
+    width:340px;height:340px;
+    right:-100px;top:-150px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.07),transparent 65%);
+    pointer-events:none;
+  }
+
+  .avatar{
+    flex:none;
+    width:76px;height:76px;
+    display:grid;place-items:center;
+    border-radius:24px;
+    font-size:30px;font-weight:600;
+    /* 哑光，不再用亮面玻璃感 */
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:none;
+    backdrop-filter:blur(4px);
+  }
+
+  .mc-main{flex:1 1 240px;min-width:0;}
+
+  .mc-name-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .mc-name-row h1{
+    font-size:24px;
+    font-weight:600;
+    letter-spacing:.5px;
+  }
+
+  /* 青铜会员徽章：哑光、低饱和 */
+  .level-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    padding:3px 11px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+    color:#4f4233;
+    background:#d8cbb8;
+    border:1px solid #c9baa4;
+    box-shadow:none;
+  }
+
+  .mc-meta{
+    margin-top:9px;
+    font-size:13px;
+    color:rgba(255,255,255,.68);
+    word-break:break-all;
+  }
+
+  .mc-growth{
+    width:266px;
+    max-width:100%;
+    margin-left:auto;
+  }
+  .growth-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:9px;
+    font-size:12.5px;
+    color:rgba(255,255,255,.70);
+  }
+  .growth-head b{
+    font-size:15px;
+    color:#fff;
+    font-variant-numeric:tabular-nums;
+  }
+  .progress{
+    height:8px;
+    border-radius:999px;
+    background:rgba(255,255,255,.18);
+    overflow:hidden;
+  }
+  /* 哑光青铜进度条，宽度对应 352/1000 */
+  .progress i{
+    display:block;
+    height:100%;
+    border-radius:999px;
+    background:#c9b79c;
+    box-shadow:none;
+  }
+  .growth-hint{
+    margin-top:10px;
+    font-size:12px;
+    color:rgba(255,255,255,.60);
+  }
+
+  /* ============ 通用面板 ============ */
+  .panel{
+    padding:22px;
+    margin-bottom:20px;
+    border-radius:var(--radius);
+    background:var(--card);
+    border:1px solid rgba(226,232,240,.9);
+    box-shadow:var(--shadow);
+  }
+
+  .panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .panel-head h2{
+    font-size:16px;
+    font-weight:600;
+    letter-spacing:.2px;
+  }
+
+  .btn-ghost{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 15px;
+    border-radius:999px;
+    font-family:inherit;
+    font-size:13px;
+    color:#6b5d4f;
+    background:#f6f1e9;
+    border:1px solid #e6ddcf;
+    cursor:pointer;
+    transition:.18s ease;
+  }
+  .btn-ghost:hover{background:#efe7da;}
+
+  /* ============ 信息网格 ============ */
+  .info-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
+  }
+
+  .info-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px;
+    border-radius:14px;
+    transition:background .18s ease;
+  }
+  .info-item:hover{background:#f8fafc;}
+  .info-item.full{grid-column:1 / -1;}
+
+  .ico{
+    flex:none;
+    width:38px;height:38px;
+    display:grid;place-items:center;
+    border-radius:12px;
+  }
+
+  .ico-blue  {background:#eef2ff;color:#4f46e5;}
+  .ico-green {background:#ecfdf5;color:#059669;}
+  .ico-violet{background:#f5f3ff;color:#7c3aed;}
+  .ico-cyan  {background:#ecfeff;color:#0891b2;}
+  .ico-amber {background:#fffbeb;color:#d97706;}
+  .ico-pink  {background:#fdf2f8;color:#db2777;}
+  .ico-slate {background:#f1f5f9;color:#475569;}
+  .ico-rose  {background:#fff1f2;color:#e11d48;}
+
+  .info-text{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    min-width:0;
+  }
+  .info-text .label{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .info-text .value{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14.5px;
+    font-weight:500;
+    color:var(--text);
+    word-break:break-all;
+  }
+
+  .eye-btn{
+    display:inline-grid;
+    place-items:center;
+    padding:0;
+    border:0;
+    background:none;
+    color:var(--muted);
+    cursor:pointer;
+    transition:.18s ease;
+  }
+  .eye-btn:hover,
+  .eye-btn.is-on{color:#6b5d4f;}
+
+  /* ============ 会员权益 ============ */
+  .benefits{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(184px,1fr));
+    gap:12px;
+  }
+  .benefit{
+    padding:16px;
+    border-radius:16px;
+    background:linear-gradient(180deg,#f8fafc,#fff);
+    border:1px solid var(--line);
+    transition:.22s ease;
+  }
+  .benefit:hover{
+    transform:translateY(-2px);
+    border-color:#e6ddcf;
+    box-shadow:0 16px 28px -22px rgba(15,23,42,.6);
+  }
+  .b-ico{
+    width:38px;height:38px;
+    display:grid;place-items:center;
+    margin-bottom:12px;
+    border-radius:12px;
+    background:#f6f1e9;
+    color:#6b5d4f;
+  }
+  .b-title{
+    font-size:14.5px;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .b-desc{
+    font-size:12.5px;
+    line-height:1.65;
+    color:var(--text-2);
+  }
+
+  /* —— 不可用权益（置灰） —— */
+  .benefit.is-disabled{
+    background:#f8fafc;
+    border-color:#eef2f7;
+    opacity:.72;
+  }
+  .benefit.is-disabled:hover{
+    transform:none;
+    border-color:#eef2f7;
+    box-shadow:none;
+  }
+  .benefit.is-disabled .b-ico{
+    background:#f1f5f9;
+    color:#94a3b8;
+  }
+  .benefit.is-disabled .b-title{
+    color:#94a3b8;
+  }
+  .benefit.is-disabled .b-desc{
+    color:#b6c0cd;
+  }
+
+  .b-tag{
+    display:inline-block;
+    margin-left:6px;
+    padding:1px 8px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:500;
+    color:#94a3b8;
+    background:#f1f5f9;
+    vertical-align:middle;
+  }
+
+  .footer-note{
+    text-align:center;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  /* ============ 弹窗 ============ */
+  .modal-mask{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:grid;
+    place-items:center;
+    padding:24px;
+    background:rgba(15,23,42,.46);
+    backdrop-filter:blur(4px);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .22s ease, visibility .22s ease;
+  }
+  .modal-mask.is-open{
+    opacity:1;
+    visibility:visible;
+  }
+
+  .modal{
+    width:min(382px,100%);
+    padding:30px 26px 24px;
+    border-radius:22px;
+    background:#fff;
+    text-align:center;
+    box-shadow:0 40px 80px -30px rgba(15,23,42,.6);
+    transform:translateY(16px) scale(.96);
+    transition:transform .26s cubic-bezier(.22,1.08,.36,1);
+  }
+  .modal-mask.is-open .modal{
+    transform:none;
+  }
+
+  .modal-ico{
+    width:62px;height:62px;
+    margin:0 auto 16px;
+    display:grid;place-items:center;
+    border-radius:20px;
+    color:#6b5d4f;
+    background:#f6f1e9;
+    box-shadow:none;
+  }
+
+  .modal h3{
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:8px;
+  }
+
+  .modal p{
+    font-size:13.5px;
+    line-height:1.7;
+    color:var(--text-2);
+    margin-bottom:22px;
+  }
+
+  .modal-actions{
+    display:flex;
+    gap:10px;
+  }
+
+  .btn-primary{
+    flex:1;
+    padding:11px 16px;
+    border:0;
+    border-radius:12px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    color:#fff;
+    background:#8a7a66;
+    cursor:pointer;
+    transition:.18s ease;
+    box-shadow:none;
+  }
+  .btn-primary:hover{
+    background:#7a6a58;
+  }
+  .btn-primary:active{transform:none;}
+
+  /* ============ 响应式 ============ */
+  @media (max-width:720px){
+    .page{padding:20px 16px 56px;}
+    .member-card{padding:22px;}
+    .mc-growth{width:100%;margin-left:0;}
+    .info-grid{grid-template-columns:1fr;}
+    .avatar{width:64px;height:64px;border-radius:20px;font-size:26px;}
+    .mc-name-row h1{font-size:21px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ==================== 顶部栏 ==================== -->
+  <header class="topbar">
+
+    <!--
+      ============ 商标 / LOGO 预留位 ============
+      需要放自己的品牌标识时，把下面这个 <a> 里的内容替换成图片即可，例如：
+
+        <a class="logo-slot" href="/" aria-label="品牌首页">
+          <img class="logo-img" src="logo.png" alt="品牌名称" />
+        </a>
+
+      建议图片高度 38~44px，透明 PNG / SVG 效果最佳。
+      ===========================================
+    -->
+    <a class="logo-slot" href="#" aria-label="品牌首页">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+           stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2 3 7l9 5 9-5-9-5Z"/>
+        <path d="M3 12l9 5 9-5"/>
+        <path d="M3 17l9 5 9-5"/>
+      </svg>
+      <span>LOGO</span>
+    </a>
+
+    <!-- 帮助中心：点击弹出提示 -->
+    <button class="topbar-link" type="button" data-admin-modal>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+           stroke="currentColor" stroke-width="1.9"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2-2.5 3.6"/>
+        <path d="M12 17h.01"/>
+      </svg>
+      帮助中心
+    </button>
+  </header>
+
+  <!-- ==================== 会员卡 ==================== -->
+  <section class="member-card">
+    <div class="avatar">林</div>
+
+    <div class="mc-main">
+      <div class="mc-name-row">
+        <h1>林振经</h1>
+        <span class="level-badge">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none"
+               stroke="currentColor" stroke-width="2.2"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="9" r="6"/>
+            <path d="m8.5 14.5-2 6.5 5.5-2.8L17.5 21l-2-6.5"/>
+          </svg>
+          青铜会员
+        </span>
+      </div>
+      <p class="mc-meta">会员编号 ZH202611130102 · 有效期至 2027-11-13</p>
+    </div>
+
+    <div class="mc-growth">
+      <div class="growth-head">
+        <span>成长值</span>
+        <span><b>352</b> / 1,000</span>
+      </div>
+      <div class="progress"><i style="width:35.2%"></i></div>
+      <p class="growth-hint">再获得 648 成长值即可升级为「白银会员」</p>
+    </div>
+  </section>
+
+  <!-- ==================== 基本资料 ==================== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>基本资料</h2>
+
+      <!-- 编辑资料：点击弹出提示 -->
+      <button class="btn-ghost" type="button" data-admin-modal>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+             stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        </svg>
+        编辑资料
+      </button>
+    </div>
+
+    <div class="info-grid">
+
+      <!-- 姓名 -->
+      <div class="info-item">
+        <span class="ico ico-blue">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">姓名</span>
+          <span class="value">林振经</span>
+        </div>
+      </div>
+
+      <!-- 手机号（可切换显示/隐藏） -->
+      <div class="info-item">
+        <span class="ico ico-green">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="3"/>
+            <path d="M11 18h2"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">手机号</span>
+          <span class="value">
+            <span id="phoneValue">182****8603</span>
+            <button class="eye-btn" id="togglePhone" type="button"
+                    aria-pressed="false" aria-label="显示或隐藏手机号">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+                   stroke="currentColor" stroke-width="1.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </span>
+        </div>
+      </div>
+
+      <!-- 电子邮箱 -->
+      <div class="info-item">
+        <span class="ico ico-violet">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2.5"/>
+            <path d="m3 6.5 9 6 9-6"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">电子邮箱</span>
+          <span class="value">暂未登记</span>
+        </div>
+      </div>
+
+      <!-- 性别 -->
+      <div class="info-item">
+        <span class="ico ico-cyan">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="10" cy="14" r="4.5"/>
+            <path d="m13.2 10.8 5.3-5.3"/>
+            <path d="M18.5 5.5v4.2M18.5 5.5h-4.2"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">性别</span>
+          <span class="value">男</span>
+        </div>
+      </div>
+
+      <!-- 出生日期 -->
+      <div class="info-item">
+        <span class="ico ico-amber">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 21h16"/>
+            <path d="M5 21v-6a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v6"/>
+            <path d="M12 12V8"/>
+            <path d="M9 9V6.5M15 9V6.5"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">出生日期</span>
+          <span class="value">暂未登记</span>
+        </div>
+      </div>
+
+      <!-- 所在城市 -->
+      <div class="info-item">
+        <span class="ico ico-pink">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">所在城市</span>
+          <span class="value">江门市 · 新会区</span>
+        </div>
+      </div>
+
+      <!-- 注册时间 -->
+      <div class="info-item">
+        <span class="ico ico-slate">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5.2l3.2 2"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">注册时间</span>
+          <span class="value">2026-11-13 23:45</span>
+        </div>
+      </div>
+
+      <!-- 会员等级 -->
+      <div class="info-item">
+        <span class="ico ico-rose">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="9" r="6"/>
+            <path d="m8.5 14.5-2 6.5 5.5-2.8L17.5 21l-2-6.5"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">会员等级</span>
+          <span class="value">青铜会员 · 成长值 352</span>
+        </div>
+      </div>
+
+      <!-- 收货地址（跨两列） -->
+      <div class="info-item full">
+        <span class="ico ico-blue">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"/>
+            <path d="M9.5 21v-6h5v6"/>
+          </svg>
+        </span>
+        <div class="info-text">
+          <span class="label">收货地址</span>
+          <span class="value">江门市新会区双水镇广州软件学院 B3 栋 406 室</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== 会员权益 ==================== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>会员权益</h2>
+    </div>
+
+    <div class="benefits">
+
+      <!-- 生日礼遇：置灰不可用 -->
+      <div class="benefit is-disabled">
+        <span class="b-ico">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="8" width="18" height="4" rx="1"/>
+            <path d="M5 12v9h14v-9"/>
+            <path d="M12 8v13"/>
+            <path d="M12 8c-1.6 0-3.6-.5-3.6-2.5S10.4 3 12 5c1.6-2 3.6-1.5 3.6.5S13.6 8 12 8Z"/>
+          </svg>
+        </span>
+        <div class="b-title">生日礼遇<span class="b-tag">暂不可用</span></div>
+        <p class="b-desc">生日当月可领取专属礼包一份，并享双倍积分。登记生日后即可解锁。</p>
+      </div>
+
+      <div class="benefit">
+        <span class="b-ico">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>
+          </svg>
+        </span>
+        <div class="b-title">积分加速</div>
+        <p class="b-desc">消费积分 100 倍累计，兑换商品时优先扣减。</p>
+      </div>
+
+      <div class="benefit">
+        <span class="b-ico">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 14v-2a8 8 0 0 1 16 0v2"/>
+            <rect x="2" y="13" width="4" height="7" rx="2"/>
+            <rect x="18" y="13" width="4" height="7" rx="2"/>
+          </svg>
+        </span>
+        <div class="b-title">专属客服</div>
+        <p class="b-desc">0×24 小时一对一客服通道，问题优先处理。</p>
+      </div>
+
+      <div class="benefit">
+        <span class="b-ico">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+               stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 7h11v9H3z"/>
+            <path d="M14 11h4l3 3v2h-7z"/>
+            <circle cx="7" cy="18" r="2"/>
+            <circle cx="17" cy="18" r="2"/>
+          </svg>
+        </span>
+        <div class="b-title">全场免运费</div>
+        <p class="b-desc">会员期内全场订单免运费，无门槛不限次数。</p>
+      </div>
+
+    </div>
+  </section>
+
+  <p class="footer-note">© 2026 智汇文印 · 会员中心</p>
+
+</div>
+
+<!-- ==================== 提示弹窗 ==================== -->
+<div class="modal-mask" id="adminModal" role="dialog" aria-modal="true"
+     aria-labelledby="adminModalTitle" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-ico">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
+           stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 8v4.5"/>
+        <path d="M12 16h.01"/>
+      </svg>
+    </div>
+
+    <h3 id="adminModalTitle">温馨提示</h3>
+    <p>请联系管理员</p>
+
+    <div class="modal-actions">
+      <button class="btn-primary" type="button" id="modalOk">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ============ 手机号显示 / 隐藏切换 ============ */
+  (function () {
+    var phoneEl = document.getElementById('phoneValue');
+    var btn     = document.getElementById('togglePhone');
+    if (!phoneEl || !btn) return;
+
+    var REAL = '18218258603';      // 完整手机号
+    var MASK = '182****8603';      // 脱敏展示
+    var visible = false;
+
+    btn.addEventListener('click', function () {
+      visible = !visible;
+      phoneEl.textContent = visible ? REAL : MASK;
+      btn.classList.toggle('is-on', visible);
+      btn.setAttribute('aria-pressed', String(visible));
+    });
+  })();
+
+  /* ============ 请联系管理员 弹窗 ============ */
+  (function () {
+    var mask  = document.getElementById('adminModal');
+    var okBtn = document.getElementById('modalOk');
+    if (!mask) return;
+
+    var lastFocus = null;
+
+    function openModal(trigger) {
+      lastFocus = trigger || document.activeElement;
+      mask.classList.add('is-open');
+      mask.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      okBtn.focus();
+    }
+
+    function closeModal() {
+      mask.classList.remove('is-open');
+      mask.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (lastFocus && typeof lastFocus.focus === 'function') {
+        lastFocus.focus();
+      }
+    }
+
+    // 所有带 data-admin-modal 的按钮
+    document.querySelectorAll('[data-admin-modal]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        openModal(el);
+      });
+    });
+
+    // 确定按钮
+    okBtn.addEventListener('click', closeModal);
+
+    // 点击遮罩空白处关闭
+    mask.addEventListener('click', function (e) {
+      if (e.target === mask) closeModal();
+    });
+
+    // ESC 关闭
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && mask.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

@@ -70,7 +70,7 @@
     min-width:144px;
     padding:0 18px;
     border-radius:14px;
-    border:1.5px dashed #cdbfa9;
+    border:1.5px solid #e6ddcf;
     background:rgba(255,255,255,.72);
     color:#8a7a66;
     font-size:13px;
@@ -81,12 +81,18 @@
     transition:.2s ease;
   }
   .logo-slot:hover{
-    border-color:#a3927c;
+    border-color:#cdbfa9;
     background:#fff;
     box-shadow:0 10px 24px -14px rgba(138,122,102,.5);
   }
-  /* 替换成真实商标图片时使用这个类 */
-  .logo-img{height:38px;width:auto;display:block;}
+  /* 真实商标图片 */
+  .logo-img{
+    height:38px;
+    width:auto;
+    max-width:180px;
+    object-fit:contain;
+    display:block;
+  }
 
   .topbar-link{
     display:inline-flex;
@@ -496,6 +502,7 @@
     .info-grid{grid-template-columns:1fr;}
     .avatar{width:64px;height:64px;border-radius:20px;font-size:26px;}
     .mc-name-row h1{font-size:21px;}
+    .logo-img{height:32px;}
   }
 </style>
 </head>
@@ -506,26 +513,9 @@
   <!-- ==================== 顶部栏 ==================== -->
   <header class="topbar">
 
-    <!--
-      ============ 商标 / LOGO 预留位 ============
-      需要放自己的品牌标识时，把下面这个 <a> 里的内容替换成图片即可，例如：
-
-        <a class="logo-slot" href="/" aria-label="品牌首页">
-          <img class="logo-img" src="logo.png" alt="品牌名称" />
-        </a>
-
-      建议图片高度 38~44px，透明 PNG / SVG 效果最佳。
-      ===========================================
-    -->
-    <a class="logo-slot" href="./img/ZHKJ.png" aria-label="品牌首页">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-           stroke="currentColor" stroke-width="1.8"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 2 3 7l9 5 9-5-9-5Z"/>
-        <path d="M3 12l9 5 9-5"/>
-        <path d="M3 17l9 5 9-5"/>
-      </svg>
-      <span>LOGO</span>
+    <!-- 商标 / LOGO：已换成真实图片 ./img/ZHKJ.png -->
+    <a class="logo-slot" href="#" aria-label="智汇文印 首页">
+      <img class="logo-img" src="./img/ZHKJ.png" alt="智汇文印" />
     </a>
 
     <!-- 帮助中心：点击弹出提示 -->
